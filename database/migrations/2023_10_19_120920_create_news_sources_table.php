@@ -15,11 +15,12 @@ return new class extends Migration {
             $table->string('provider');
             $table->string('id_from_provider');
             $table->string('name');
-            $table->text('description');
-            $table->string('country');
-            $table->string('language');
-            $table->string('category');
-            $table->string('url');
+            $table->text('description')->nullable();
+            $table->string('country')->nullable();
+            $table->string('language')->nullable();
+            $table->string('category')->nullable();
+            $table->string('url')->nullable();
+            $table->foreign('category')->references('name')->on('categories');
             $table->timestamps();
         });
     }

@@ -19,6 +19,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return $request->user();
     });
 
-    Route::get('/fetch-news-api', [\App\Http\Controllers\News\NewsController::class, 'index']);
-    Route::get('/news-sources', [\App\Http\Controllers\News\NewsSourceController::class, 'index']);
+    Route::get('/articles', [\App\Http\Controllers\News\ArticleController::class, 'index']);
+    Route::get('/sources', [\App\Http\Controllers\News\NewsSourceController::class, 'index']);
 });

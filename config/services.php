@@ -18,6 +18,10 @@ return [
         'base_url' => env('NEWSAPI_BASE_URL'),
         'api_key' => env('NEWSAPI_API_KEY'),
     ],
+    'newsdataio' => [
+        'base_url' => env('NEWSDATAIO_BASE_URL'),
+        'api_key' => env('NEWSDATAIO_API_KEY'),
+    ],
 
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
