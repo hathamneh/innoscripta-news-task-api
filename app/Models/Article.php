@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Article extends Model
 {
@@ -28,18 +29,23 @@ class Article extends Model
         return $this->belongsTo(NewsSource::class);
     }
 
-    public function category(): BelongsTo
+    public function categories(): BelongsToMany
     {
-        return $this->belongsTo(Category::class, 'category', 'name');
+        return $this->belongsToMany(
+            Category::class,
+            'article_category',
+            'article_id',
+            'category_name'
+        );
     }
 
-    public function scopeFromProvider($query, string $provider): void
+    public function countries(): BelongsToMany
     {
-        $query->where('provider', $provider);
-    }
-
-    public function scopeFromSource($query, string $sourceId): void
-    {
-        $query->where('source_id', $sourceId);
+        return $this->belongsToMany(
+            Country::class,
+            'article_country',
+            'article_id',
+            'country_code'
+        );
     }
 }

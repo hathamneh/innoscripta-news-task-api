@@ -6,6 +6,9 @@ use App\Models\Category;
 use App\Models\Country;
 use App\Models\NewsSource;
 use App\Repositories\ArticleRepository;
+use App\Repositories\NewsSourceRepository;
+use App\Services\NewsProviders\Models\NewsProviderArticle;
+use App\Services\NewsProviders\Models\NewsProviderModel;
 use App\Services\NewsProviders\NewsProvider;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -29,7 +32,10 @@ class FetchNews extends Command
 
     protected NewsProvider $newsProvider;
 
-    public function __construct(protected ArticleRepository $articleRepository)
+    public function __construct(
+        protected ArticleRepository    $articleRepository,
+        protected NewsSourceRepository $newsSourceRepository,
+    )
     {
         parent::__construct();
     }
@@ -61,15 +67,16 @@ class FetchNews extends Command
 
     protected function fetchFromProvider(): void
     {
-        $this->info("\nFetching news from {$this->newsProvider->name()}...");
+        $fetchingFromDate = $this->startFetchingFromDate();
+        $this->info("\n[{$this->newsProvider->name()}] Fetching news " . !$fetchingFromDate ?: "from $fetchingFromDate" . "...");
 
         $countries = Country::all()->pluck('code')->values()->toArray();
-
         $sources = $this->fetchSources(['country' => $countries]);
 
-        $totalArticlesCreated = $this->fetchArticles($countries, $sources);
+        $params = ['country' => $countries, 'from' => $fetchingFromDate];
+        $this->fetchArticles($sources, $params);
 
-        $this->info("\n{$totalArticlesCreated} Articles saved from {$this->newsProvider->name()} successfully!\n");
+        $this->info("\n[{$this->newsProvider->name()}] Articles saved successfully!\n");
     }
 
     protected function fetchSources(array $params): Collection
@@ -79,44 +86,40 @@ class FetchNews extends Command
         return $this->saveSources($sourcesData);
     }
 
-    protected function fetchArticles(array $countries, Collection $sources): int
+    protected function fetchArticles(Collection $sources, array $params): int
     {
-        $sourcesIds = $sources->pluck('id_from_provider')->values()->toArray();
-        $params = ['country' => $countries, 'sources' => $sourcesIds];
+        $params['sources'] = $sources->pluck('id_from_provider')->values()->toArray();
 
         $bar = $this->output->createProgressBar();
-        $totalArticlesCreated = 0;
+        $articlesCreated = collect();
         foreach ($this->newsProvider->articles($params) as $articlesDataChunk) {
             $this->updateCategories($articlesDataChunk);
-            $totalArticlesCreated += $this->saveArticles($articlesDataChunk, $sources);
+            $articlesCreated->merge($this->saveArticles($articlesDataChunk, $sources));
             $bar->advance($articlesDataChunk->count());
         }
 
         $bar->finish();
 
-        return $totalArticlesCreated;
+        return $articlesCreated->count();
     }
 
     protected function updateCategories(Collection $items): void
     {
-        $categories = $items->map(function ($item) {
-            if (!isset($item['category'])) {
-                return null;
-            }
+        $categories = $items->map(function (NewsProviderModel $item) {
+            return $item->category;
+        })->flatten()->unique()->filter();
 
-            return [
-                'name' => $item['category'],
-            ];
-        })->filter()->unique('name')->toArray();
-
+        $categories = $categories->map(function ($category) {
+            return ['name' => $category];
+        })->toArray();
         Category::upsert($categories, ['name']);
     }
 
-    protected function saveArticles(Collection $articlesData, Collection $loadedSources): int
+    protected function saveArticles(Collection $providerArticles, Collection $loadedSources): Collection
     {
-        $data = $articlesData->map(function ($article) use ($loadedSources) {
+        $data = $providerArticles->map(function (NewsProviderArticle $article) use ($loadedSources) {
             $source = $this->findSourceByProviderSourceId(
-                $article['provider_source_id'],
+                $article->provider_source_id,
                 $loadedSources,
             );
 
@@ -124,18 +127,21 @@ class FetchNews extends Command
                 return null;
             }
 
+            $articleData = $article->toArray();
             // replace source id from provider with source id from database
-            $article['source_id'] = $source->id;
-            unset($article['provider_source_id']);
-            return $article;
+            $articleData['source_id'] = $source->id;
+            unset($articleData['provider_source_id']);
+
+            return $articleData;
         })->filter()->toArray();
 
-        return $this->articleRepository->upsert($data);
+
+        return $this->articleRepository->createManyFromProviderArticlesData($data);
     }
 
     protected function saveSources(Collection $sourcesData): Collection
     {
-        return NewsSource::getOrCreateMany($sourcesData);
+        return $this->newsSourceRepository->createManyFromProviderSources($sourcesData);
     }
 
     protected function findSourceByProviderSourceId(
@@ -158,6 +164,11 @@ class FetchNews extends Command
             ]);
         }
         return $source;
+    }
+
+    protected function startFetchingFromDate(): ?string
+    {
+        return $this->articleRepository->getLastFetchedArticleDate($this->newsProvider->name());
     }
 
     protected function setCurrentProvider(NewsProvider $newsProvider): void

@@ -2,8 +2,9 @@
 
 namespace App\Services\NewsProviders;
 
+use App\Services\NewsProviders\Models\NewsProviderArticle;
+use App\Services\NewsProviders\Models\NewsProviderSource;
 use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 
@@ -28,65 +29,30 @@ abstract class NewsProvider
 
     abstract public function sources(array $params = []): Collection;
 
-    protected function toArticleData(array $articleData): ?array
+    protected function toArticle(array $articleData): NewsProviderArticle
     {
-        $sourceIdFromProvider = $this->articleFieldValue($articleData, 'source_id', 'source_name');
-        return [
+        $article = new NewsProviderArticle();
+        $article->setMapper($this->articleMapping);
+        $article->fill([
             'provider' => $this->name(),
-            'provider_source_id' => $sourceIdFromProvider,
-            'title' => $this->articleFieldValue($articleData, 'title'),
-            'description' => $this->articleFieldValue($articleData, 'description'),
-            'url' => $this->articleFieldValue($articleData, 'url'),
-            'image' => $this->articleFieldValue($articleData, 'image'),
-            'published_at' => $this->articleFieldValue($articleData, 'published_at'),
-            'content' => $this->articleFieldValue($articleData, 'content'),
-            'author' => $this->articleFieldValue($articleData, 'author'),
-            'category' => $this->articleFieldValue($articleData, 'category'),
-            'country' => $this->articleFieldValue($articleData, 'country'),
-            'language' => $this->articleFieldValue($articleData, 'language'),
-        ];
+            ...$articleData
+        ]);
+
+        return $article;
     }
 
-    protected function toSourceData(array $sourceData): array
+    protected function toSourceData(array $sourceData): NewsProviderSource
     {
-        return [
+        $source = new NewsProviderSource();
+        $source->setMapper($this->sourceMapping);
+        $source->fill([
             'provider' => $this->name(),
-            'id_from_provider' => $this->sourceFieldValue($sourceData, 'id_from_provider'),
-            'name' => $this->sourceFieldValue($sourceData, 'name'),
-            'description' => $this->sourceFieldValue($sourceData, 'description'),
-            'url' => $this->sourceFieldValue($sourceData, 'url'),
-            'category' => $this->sourceFieldValue($sourceData, 'category'),
-            'language' => $this->sourceFieldValue($sourceData, 'language'),
-            'country' => $this->sourceFieldValue($sourceData, 'country'),
-        ];
+            ...$sourceData
+        ]);
+
+        return $source;
     }
 
-    protected function articleFieldValue(array $articleData, string $fieldName, $fallbackFieldName = null)
-    {
-        $value = Arr::get($articleData, $this->articleFieldName($fieldName));
-        if (!is_null($value)) {
-            return $value;
-        }
-        if (!is_null($fallbackFieldName)) {
-            return Arr::get($articleData, $this->articleFieldName($fallbackFieldName));
-        }
-        return null;
-    }
-
-    protected function articleFieldName(string $fieldName): string
-    {
-        return $this->articleMapping[$fieldName] ?? $fieldName;
-    }
-
-    protected function sourceFieldValue(array $sourceData, string $fieldName)
-    {
-        return $sourceData[$this->sourceFieldName($fieldName)] ?? null;
-    }
-
-    protected function sourceFieldName(string $fieldName): string
-    {
-        return $this->sourceMapping[$fieldName] ?? $fieldName;
-    }
 
     public function name(): string
     {

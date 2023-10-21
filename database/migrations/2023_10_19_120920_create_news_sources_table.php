@@ -16,11 +16,9 @@ return new class extends Migration {
             $table->string('id_from_provider');
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('country')->nullable();
             $table->string('language')->nullable();
-            $table->string('category')->nullable();
-            $table->string('url')->nullable();
-            $table->foreign('category')->references('name')->on('categories');
+            $table->text('url')->nullable();
+            $table->unique(['provider', 'id_from_provider']);
             $table->timestamps();
         });
     }

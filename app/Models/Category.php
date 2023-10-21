@@ -4,19 +4,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Category extends Model
 {
     use HasFactory;
 
-    public function articles(): HasMany
+    protected $primaryKey = 'name';
+
+    protected $keyType = 'string';
+
+    public $incrementing = false;
+
+    public function articles(): BelongsToMany
     {
-        return $this->hasMany(Article::class, 'category', 'name');
+        return $this->belongsToMany(
+            Article::class,
+            'article_category',
+            'category_name',
+            'article_id'
+        );
     }
 
-    public function newsSources(): HasMany
+    public function newsSources(): BelongsToMany
     {
-        return $this->hasMany(NewsSource::class);
+        return $this->belongsToMany(
+            NewsSource::class,
+            'category_news_source',
+            'category_name',
+            'news_source_id'
+        );
     }
 }

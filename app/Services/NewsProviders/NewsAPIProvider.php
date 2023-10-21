@@ -9,9 +9,10 @@ class NewsAPIProvider extends NewsProvider
 {
     const CHUNK_SIZE = 10;
 
+    const SECONDS_BETWEEN_REQUESTS = 1;
+
     protected array $articleMapping = [
-        'source_id' => 'source.id',
-        'source_name' => 'source.name',
+        'provider_source_id' => ['source.id', 'source.name'],
         'image' => 'urlToImage',
         'published_at' => 'publishedAt',
     ];
@@ -26,15 +27,22 @@ class NewsAPIProvider extends NewsProvider
         $this->headers = [
             'X-Api-Key' => config('services.newsapi.api_key'),
         ];
+
+        $this->articleMapping['category'] = fn($articleData) => $this->splitValue($articleData['category']);
+        $this->articleMapping['country'] = fn($articleData) => $this->splitValue($articleData['country']);
+
+        $this->sourceMapping['category'] = fn($sourceData) => $this->splitValue($sourceData['category']);
+        $this->sourceMapping['country'] = fn($sourceData) => $this->splitValue($sourceData['country']);
     }
 
     public function articles(array $params = []): \Generator
     {
-        ['sources' => $sources] = $params;
+        ['sources' => $sources, 'from' => $from] = $params;
 
         $chunks = collect($sources)->chunk(self::CHUNK_SIZE);
         foreach ($chunks as $chunk) {
-            yield $this->fetchArticles($chunk);
+            yield $this->fetchArticles($chunk, $from);
+            sleep(self::SECONDS_BETWEEN_REQUESTS);
         }
     }
 
@@ -52,13 +60,14 @@ class NewsAPIProvider extends NewsProvider
         });
     }
 
-    protected function fetchArticles(Collection $sources): Collection
+    protected function fetchArticles(Collection $sources, ?string $from): Collection
     {
         $queryParams = [
             'sources' => $sources->implode(','),
+            'from' => $from,
         ];
 
-        $results = $this->http()->get('/everything', $queryParams)->json();
+        $results = $this->http()->get('/top-headlines', $queryParams)->json();
 
         if ($results['status'] != 'ok') {
             Log::error($results);
@@ -68,7 +77,14 @@ class NewsAPIProvider extends NewsProvider
         return collect($results['articles'])->map(function ($article) {
             if ($article['source']['name'] == "[Removed]")
                 return null;
-            return $this->toArticleData($article);
+            return $this->toArticle($article);
+        })->filter();
+    }
+
+    protected function splitValue($value, $separator = ',')
+    {
+        return collect(explode($separator, $value))->map(function ($item) {
+            return trim($item);
         })->filter();
     }
 }
