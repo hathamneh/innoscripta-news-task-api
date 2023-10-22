@@ -22,6 +22,10 @@ return [
         'base_url' => env('NEWSDATAIO_BASE_URL'),
         'api_key' => env('NEWSDATAIO_API_KEY'),
     ],
+    'theguardian' => [
+        'base_url' => env('THEGUARDIAN_BASE_URL'),
+        'api_key' => env('THEGUARDIAN_API_KEY'),
+    ],
 
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),

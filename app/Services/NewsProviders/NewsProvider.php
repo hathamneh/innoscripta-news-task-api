@@ -14,6 +14,8 @@ abstract class NewsProvider
 
     protected array $headers = [];
 
+    protected array $query = [];
+
     protected array $articleMapping = [];
 
     protected array $sourceMapping = [];
@@ -22,7 +24,8 @@ abstract class NewsProvider
     {
         return Http::withOptions([
             'base_uri' => $this->baseUrl,
-        ])->withHeaders($this->headers);
+        ])->withHeaders($this->headers)
+            ->withQueryParameters($this->query);
     }
 
     abstract public function articles(array $params = []): \Generator;

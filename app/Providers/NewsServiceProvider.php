@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\NewsProviders\NewsAPIProvider;
 use App\Services\NewsProviders\NewsDataIOProvider;
+use App\Services\NewsProviders\TheGuardianProvider;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -11,7 +12,8 @@ class NewsServiceProvider extends ServiceProvider
 {
     protected array $newsProviders = [
         NewsAPIProvider::class,
-        NewsDataIOProvider::class
+        NewsDataIOProvider::class,
+        TheGuardianProvider::class,
     ];
 
     /**

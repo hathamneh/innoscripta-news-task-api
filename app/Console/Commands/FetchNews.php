@@ -21,7 +21,7 @@ class FetchNews extends Command
      *
      * @var string
      */
-    protected $signature = 'app:fetch-news {provider?} {--sources=*}';
+    protected $signature = 'app:fetch-news {provider?}';
 
     /**
      * The console command description.
@@ -45,6 +45,12 @@ class FetchNews extends Command
      */
     public function handle(NewsProvider ...$newsProviders): void
     {
+        $provider = $this->argument('provider');
+        if ($provider) {
+            $newsProviders = collect($newsProviders)->filter(function (NewsProvider $newsProvider) use ($provider) {
+                return $newsProvider->name() === $provider;
+            })->values()->toArray();
+        }
         $this->scrapeNews(...$newsProviders);
     }
 
@@ -68,7 +74,7 @@ class FetchNews extends Command
     protected function fetchFromProvider(): void
     {
         $fetchingFromDate = $this->startFetchingFromDate();
-        $this->info("\n[{$this->newsProvider->name()}] Fetching news " . !$fetchingFromDate ?: "from $fetchingFromDate" . "...");
+        $this->info("\n[{$this->newsProvider->name()}] Fetching news " . ($fetchingFromDate ? "from $fetchingFromDate" : "") . "...");
 
         $countries = Country::all()->pluck('code')->values()->toArray();
         $sources = $this->fetchSources(['country' => $countries]);
