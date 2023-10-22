@@ -20,13 +20,9 @@ return new class extends Migration {
             $table->timestamp('published_at')->nullable();
             $table->text('author')->nullable();
             $table->text('image')->nullable();
-            $table->string('category', 255)->nullable();
-            $table->string('country')->nullable();
             $table->string('language')->nullable();
             $table->unsignedBigInteger('source_id');
             $table->foreign('source_id')->references('id')->on('news_sources');
-            $table->foreign('category')->references('name')->on('categories');
-            $table->foreign('country')->references('code')->on('countries');
             $table->timestamps();
         });
     }

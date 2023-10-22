@@ -2,11 +2,18 @@
 
 namespace App\Utils;
 
+use Illuminate\Support\Str;
+
 class CountriesUtils
 {
     public static function codeToName(string $code): string
     {
         return self::countries()[strtolower($code)] ?? '';
+    }
+
+    public static function codeToNameTitle(string $code): string
+    {
+        return Str::title(self::countries()[strtolower($code)] ?? '');
     }
 
     public static function nameToCode(string $name): string

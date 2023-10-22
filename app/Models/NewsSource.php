@@ -24,7 +24,7 @@ class NewsSource extends Model
 
     public function articles(): HasMany
     {
-        return $this->hasMany(Article::class);
+        return $this->hasMany(Article::class, 'source_id');
     }
 
     public function categories(): BelongsToMany

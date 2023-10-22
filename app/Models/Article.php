@@ -26,7 +26,7 @@ class Article extends Model
 
     public function source(): BelongsTo
     {
-        return $this->belongsTo(NewsSource::class);
+        return $this->belongsTo(NewsSource::class, 'source_id');
     }
 
     public function categories(): BelongsToMany

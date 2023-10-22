@@ -4,11 +4,40 @@ namespace App\Repositories;
 
 use App\Models\NewsSource;
 use App\Services\NewsProviders\Models\NewsProviderSource;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class NewsSourceRepository
 {
+    public function query(): Builder
+    {
+        return NewsSource::query();
+    }
+
+    public function lookup(): Collection
+    {
+        return $this->query()->orderBy('name')->get(['id', 'name'])->map(function ($source) {
+            return [
+                'id' => $source->id,
+                'name' => Str::ucfirst($source->name),
+            ];
+        });
+    }
+
+    public function find(int $id): NewsSource
+    {
+        return $this->query()->findOrFail($id);
+    }
+
+    public function topSources(): Builder
+    {
+        return $this->query()
+            ->withCount('articles')
+            ->orderByDesc('articles_count');
+    }
+
     public function upsert(array $sources): int
     {
         return NewsSource::upsert(

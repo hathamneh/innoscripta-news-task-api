@@ -19,6 +19,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return $request->user();
     });
 
-    Route::get('/articles', [\App\Http\Controllers\News\ArticleController::class, 'index']);
-    Route::get('/sources', [\App\Http\Controllers\News\NewsSourceController::class, 'index']);
-});
+Route::get('/articles', [\App\Http\Controllers\News\ArticleController::class, 'index']);
+
+Route::get('/sources', [\App\Http\Controllers\News\NewsSourceController::class, 'index']);
+Route::get('/sources/lookup', [\App\Http\Controllers\News\NewsSourceController::class, 'lookup']);
+Route::get('/sources/{source}', [\App\Http\Controllers\News\NewsSourceController::class, 'show']);
+
+Route::get('/categories', [\App\Http\Controllers\News\CategoryController::class, 'index']);
+Route::get('/categories/lookup', [\App\Http\Controllers\News\CategoryController::class, 'lookup']);
+
+Route::get('/countries/lookup', [\App\Http\Controllers\CountryController::class, 'lookup']);
+
+Route::get('/languages/lookup', [\App\Http\Controllers\LanguageController::class, 'lookup']);
+
