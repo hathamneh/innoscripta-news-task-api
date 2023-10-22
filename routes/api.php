@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,9 +14,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    Route::get('/user', \App\Http\Controllers\User\UserController::class);
+    Route::get('/user/settings', [\App\Http\Controllers\User\UserSettingsController::class, 'index']);
+    Route::put('/user/settings', [\App\Http\Controllers\User\UserSettingsController::class, 'update']);
+});
 
 Route::get('/articles', [\App\Http\Controllers\News\ArticleController::class, 'index']);
 

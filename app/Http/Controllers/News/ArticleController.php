@@ -16,7 +16,7 @@ class ArticleController extends Controller
     public function index(Request $request)
     {
         $params = $request->validate([
-            'source.*' => 'string|nullable',
+            'source.*' => 'int|nullable',
             'category.*' => 'string|nullable',
             'country.*' => 'string|nullable',
             'language.*' => 'string|nullable',
