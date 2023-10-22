@@ -1,66 +1,136 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Innoscripta News Task API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Installation
 
-## About Laravel
+### TL;DR
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+```shell
+composer install
+cp .env.example .env
+php artisan key:generate # generate a new APP_KEY
+./vendor/bin/sail up -d # start the app and database containers
+./vendor/bin/sail artisan migrate # run the migrations
+./vendor/bin/sail artisan db:seed # seed `countries` table
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# Fetch news from providers, requires API keys
+./vendor/bin/sail artisan app:fetch-news 
+# Run the scheduler to fetch news every 15 minutes
+./vendor/bin/sail artisan schedule:work
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Below is a detailed explanation of the installation process:
 
-## Learning Laravel
+### Requirements
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.1+
+- [Composer](https://getcomposer.org/)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Dependencies
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Install the dependencies using composer:
 
-## Laravel Sponsors
+```shell
+composer install
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+### Environment
 
-### Premium Partners
+Copy `.env.example` to `.env` the default values should work for a local development environment.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+In order to fetch news from providers you need to set the API keys for each provider, check below for more information
+about the providers.
 
-## Contributing
+You also need to update the `APP_KEY`, you can generate a new one using the following command:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```shell
+php artisan key:generate
+```
 
-## Code of Conduct
+### Using Docker (Laravel Sail)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+This application is using Laravel Sail to run the application in a docker container.
+If you don't want to use Laravel Sail you can always use `docker-compose` directly.
 
-## Security Vulnerabilities
+This documentation assumes you are using Laravel Sail.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Run the following command to build the docker images and start the containers:
 
-## License
+```shell
+./vendor/bin/sail up -d
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This will start the containers in the background, you can check the status of the containers using the following
+commands:
+
+```shell
+./vendor/bin/sail ps # List all containers
+./vendor/bin/sail logs -f # Follow logs
+```
+
+### Database
+
+Run the migrations to create the database tables:
+
+```shell
+./vendor/bin/sail artisan migrate
+```
+
+Seed the `countries` table with the ISO 3166-1 alpha-2 codes:
+
+```shell
+./vendor/bin/sail artisan db:seed
+```
+
+### Fetching news
+
+You can fetch news from providers using the following command:
+
+```shell
+./vendor/bin/sail artisan app:fetch-news
+```
+
+This command will fetch news from all providers, you can also specify a provider:
+
+```shell
+./vendor/bin/sail artisan app:fetch-news NewsDataIOProvider
+```
+
+### Scheduler
+
+You can run the scheduler to fetch news from providers every 15 minutes automatically:
+
+Locally:
+
+```shell
+./vendor/bin/sail artisan schedule:work
+```
+
+In production, you need to run the following command to modify the crontab of the OS:
+
+```shell
+./vendor/bin/sail artisan schedule:run
+```
+
+#### Supported Providers
+
+The application supports the following providers:
+
+- ##### NewsAPIProvider
+
+You need to set the `NEWS_API_KEY` environment variable to your API key. You can get an API key
+from [NewsAPI.org](https://newsapi.org/).
+
+- ##### NewsDataIOProvider
+
+You need to set the `NEWSDATAIO_API_KEY` environment variable to your API key. You can get an API key
+from [NewsData.io](https://newsdata.io/).
+
+- ##### TheGuardianProvider
+
+You need to set the `THEGUARDIAN_API_KEY` environment variable to your API key. You can get an API key
+from [The Guardian Open Platform](https://open-platform.theguardian.com/).
+
+##### Adding a new provider
+
+To add a new provider you need to create a new class that extends the `NewsProvider` abstract class and implement
+the `articles` and `sources` methods. You can check the existing providers for examples.
