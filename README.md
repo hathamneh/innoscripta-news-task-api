@@ -130,7 +130,7 @@ from [NewsData.io](https://newsdata.io/).
 You need to set the `THEGUARDIAN_API_KEY` environment variable to your API key. You can get an API key
 from [The Guardian Open Platform](https://open-platform.theguardian.com/).
 
-##### Adding a new provider
+### Adding a new provider
 
 To add a new provider you need to create a new class that implements the `NewsProvider` interface and implement
 the `articles` and `sources` methods.
