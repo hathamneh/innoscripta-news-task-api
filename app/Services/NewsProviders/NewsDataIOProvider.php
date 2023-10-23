@@ -2,13 +2,14 @@
 
 namespace App\Services\NewsProviders;
 
+use App\Services\NewsProviders\Contracts\BaseNewsProvider;
 use App\Utils\CountriesUtils;
 use App\Utils\LanguagesUtils;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class NewsDataIOProvider extends NewsProvider
+class NewsDataIOProvider extends BaseNewsProvider
 {
     const CHUNK_SIZE = 5;
     const SECONDS_BETWEEN_REQUESTS = 1;

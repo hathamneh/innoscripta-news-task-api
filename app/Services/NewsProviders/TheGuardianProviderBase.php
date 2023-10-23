@@ -2,11 +2,12 @@
 
 namespace App\Services\NewsProviders;
 
+use App\Services\NewsProviders\Contracts\BaseNewsProvider;
 use App\Services\NewsProviders\Models\NewsProviderSource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class TheGuardianProvider extends NewsProvider
+class TheGuardianProviderBase extends BaseNewsProvider
 {
 
     const PAGE_SIZE = 50;

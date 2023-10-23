@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\NewsProviders;
+namespace App\Services\NewsProviders\Contracts;
 
 use App\Services\NewsProviders\Models\NewsProviderArticle;
 use App\Services\NewsProviders\Models\NewsProviderSource;
@@ -8,7 +8,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 
-abstract class NewsProvider
+abstract class BaseNewsProvider implements NewsProvider
 {
     protected string $baseUrl;
 

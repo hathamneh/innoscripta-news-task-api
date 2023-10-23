@@ -2,10 +2,11 @@
 
 namespace App\Services\NewsProviders;
 
+use App\Services\NewsProviders\Contracts\BaseNewsProvider;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class NewsAPIProvider extends NewsProvider
+class NewsAPIProvider extends BaseNewsProvider
 {
     const CHUNK_SIZE = 10;
 

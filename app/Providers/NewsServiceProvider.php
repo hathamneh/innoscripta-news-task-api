@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\Services\NewsProviders\NewsAPIProvider;
 use App\Services\NewsProviders\NewsDataIOProvider;
-use App\Services\NewsProviders\TheGuardianProvider;
+use App\Services\NewsProviders\TheGuardianProviderBase;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,7 +13,7 @@ class NewsServiceProvider extends ServiceProvider
     protected array $newsProviders = [
         NewsAPIProvider::class,
         NewsDataIOProvider::class,
-        TheGuardianProvider::class,
+        TheGuardianProviderBase::class,
     ];
 
     /**
@@ -22,7 +22,7 @@ class NewsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            \App\Services\NewsProviders\NewsProvider::class,
+            \App\Services\NewsProviders\Contracts\NewsProvider::class,
             function (Application $app) {
                 return collect($this->newsProviders)->map(function ($provider) use ($app) {
                     return $app->make($provider);
