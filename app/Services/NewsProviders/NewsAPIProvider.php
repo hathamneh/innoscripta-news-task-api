@@ -3,14 +3,21 @@
 namespace App\Services\NewsProviders;
 
 use App\Services\NewsProviders\Contracts\BaseNewsProvider;
+use App\Services\NewsProviders\Contracts\NewsProvider;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class NewsAPIProvider extends BaseNewsProvider
+class NewsAPIProvider implements NewsProvider
 {
+    use BaseNewsProvider;
+
     const CHUNK_SIZE = 10;
 
     const SECONDS_BETWEEN_REQUESTS = 1;
+
+    protected string $baseUrl;
+
+    protected array $headers;
 
     protected array $articleMapping = [
         'provider_source_id' => ['source.id', 'source.name'],
@@ -57,7 +64,7 @@ class NewsAPIProvider extends BaseNewsProvider
         }
 
         return collect($results['sources'])->map(function ($source) {
-            return $this->toSourceData($source);
+            return $this->toSource($source);
         });
     }
 

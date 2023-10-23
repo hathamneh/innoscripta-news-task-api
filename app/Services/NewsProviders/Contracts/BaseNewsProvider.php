@@ -8,24 +8,38 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 
-abstract class BaseNewsProvider implements NewsProvider
+trait BaseNewsProvider
 {
-    protected string $baseUrl;
-
-    protected array $headers = [];
-
-    protected array $query = [];
-
-    protected array $articleMapping = [];
-
-    protected array $sourceMapping = [];
-
     protected function http(): PendingRequest
     {
         return Http::withOptions([
-            'base_uri' => $this->baseUrl,
-        ])->withHeaders($this->headers)
-            ->withQueryParameters($this->query);
+            'base_uri' => $this->getBaseUrl(),
+        ])->withHeaders($this->getHeaders())
+            ->withQueryParameters($this->getQuery());
+    }
+
+    protected function getBaseUrl(): string
+    {
+        if (property_exists($this, 'baseUrl')) {
+            return $this->baseUrl;
+        }
+        return '';
+    }
+
+    protected function getHeaders(): array
+    {
+        if (property_exists($this, 'headers')) {
+            return $this->headers;
+        }
+        return [];
+    }
+
+    protected function getQuery(): array
+    {
+        if (property_exists($this, 'query')) {
+            return $this->query;
+        }
+        return [];
     }
 
     abstract public function articles(array $params = []): \Generator;
@@ -35,7 +49,9 @@ abstract class BaseNewsProvider implements NewsProvider
     protected function toArticle(array $articleData): NewsProviderArticle
     {
         $article = new NewsProviderArticle();
-        $article->setMapper($this->articleMapping);
+        if (property_exists($this, 'articleMapping')) {
+            $article->setMapper($this->articleMapping);
+        }
         $article->fill([
             'provider' => $this->name(),
             ...$articleData
@@ -44,10 +60,12 @@ abstract class BaseNewsProvider implements NewsProvider
         return $article;
     }
 
-    protected function toSourceData(array $sourceData): NewsProviderSource
+    protected function toSource(array $sourceData): NewsProviderSource
     {
         $source = new NewsProviderSource();
-        $source->setMapper($this->sourceMapping);
+        if (property_exists($this, 'sourceMapping')) {
+            $source->setMapper($this->sourceMapping);
+        }
         $source->fill([
             'provider' => $this->name(),
             ...$sourceData

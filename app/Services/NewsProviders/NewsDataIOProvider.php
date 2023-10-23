@@ -3,16 +3,23 @@
 namespace App\Services\NewsProviders;
 
 use App\Services\NewsProviders\Contracts\BaseNewsProvider;
+use App\Services\NewsProviders\Contracts\NewsProvider;
 use App\Utils\CountriesUtils;
 use App\Utils\LanguagesUtils;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class NewsDataIOProvider extends BaseNewsProvider
+class NewsDataIOProvider implements NewsProvider
 {
+    use BaseNewsProvider;
+
     const CHUNK_SIZE = 5;
     const SECONDS_BETWEEN_REQUESTS = 1;
+
+    protected string $baseUrl;
+
+    protected array $headers;
 
     protected array $articleMapping = [
         'provider_source_id' => 'source_id',
@@ -61,7 +68,7 @@ class NewsDataIOProvider extends BaseNewsProvider
         }
 
         return collect($results['results'])->map(function ($source) {
-            return $this->toSourceData($source);
+            return $this->toSource($source);
         });
     }
 

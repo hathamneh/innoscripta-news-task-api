@@ -3,12 +3,14 @@
 namespace App\Services\NewsProviders;
 
 use App\Services\NewsProviders\Contracts\BaseNewsProvider;
+use App\Services\NewsProviders\Contracts\NewsProvider;
 use App\Services\NewsProviders\Models\NewsProviderSource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class TheGuardianProviderBase extends BaseNewsProvider
+class TheGuardianProviderBase implements NewsProvider
 {
+    use BaseNewsProvider;
 
     const PAGE_SIZE = 50;
     protected array $articleMapping = [
@@ -20,6 +22,10 @@ class TheGuardianProviderBase extends BaseNewsProvider
         'author' => 'fields.byline',
         'category' => 'sectionName',
     ];
+
+    protected string $baseUrl;
+
+    protected array $query;
 
     public function __construct()
     {

@@ -132,5 +132,41 @@ from [The Guardian Open Platform](https://open-platform.theguardian.com/).
 
 ##### Adding a new provider
 
-To add a new provider you need to create a new class that extends the `NewsProvider` abstract class and implement
-the `articles` and `sources` methods. You can check the existing providers for examples.
+To add a new provider you need to create a new class that implements the `NewsProvider` interface and implement
+the `articles` and `sources` methods.
+
+You can also use the `BaseNewsProvider` trait which provides some out of
+the box functionality. It will provide HTTP client to make requests to the provider API and methods to parse the
+responses (articles and resources) and map them to the `Article` and `Source` model attributes.
+
+```php
+class SomeNewsProvider implements NewsProvider
+{
+    use BaseNewsProvider;
+    
+    protected array $articleMapping = []; // maps the provider response to the Article model attributes
+
+    protected array $sourceMapping = []; // maps the provider response to the Source model attributes
+
+    
+    public function articles(): \Generator
+    {
+        $response = $this->http()->get('/api/articles')->json();
+        
+        yield collect($response['articles'])->map(fn (array $article) => $this->toArticle($article));
+    }
+    
+    public function sources(): \Illuminate\Database\Eloquent\Collection
+    {
+        $response = $this->get('/api/sources')->json();
+        
+        return collect($response['sources'])->map(fn (array $source) => $this->toSource($source));
+    }
+}
+```
+
+Notice that the `articles` method returns a generator, this is because some providers limit the number of articles
+returned in a single request, so we need to make multiple requests to get all the articles. But we don't want to
+wait for all the requests to finish before returning the articles, so we use a generator to return the articles
+as soon as we get them. This way we can start processing the articles while we are still making requests to the
+provider API.
